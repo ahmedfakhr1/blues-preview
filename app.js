@@ -95,7 +95,8 @@
     if (lang() === 'ar') return new Date(2000, 0, 1, h, mi).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit' });
     return ((h % 12) || 12) + ':' + pad(mi) + ' ' + (h >= 12 ? 'PM' : 'AM');
   }
-  function guestText(n) { return n + ' ' + (n === 1 ? T('guest') : T('guests')); }
+  function nf(n) { return lang() === 'ar' ? n.toLocaleString('ar-EG') : String(n); }
+  function guestText(n) { return nf(n) + ' ' + (n === 1 ? T('guest') : T('guests')); }
   function dateFromKey(k) { var p = k.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); }
   var FROM, TO, MODE, panes = [];
   function slots() { var a = []; for (var m = FROM; m <= TO; m += 30) a.push(m); return a; }
@@ -130,7 +131,8 @@
   }
   function summary() {
     var d = dateFromKey(R.date);
-    return dfmt(d, { weekday: 'long', day: 'numeric', month: 'short' }) + ', ' + tlabel(R.time) + ', ' + guestText(R.guests);
+    var sep = lang() === 'ar' ? '، ' : ', ';
+    return dfmt(d, { weekday: 'long', day: 'numeric', month: 'short' }) + sep + tlabel(R.time) + sep + guestText(R.guests);
   }
   function go(n) {
     panes.forEach(function (p, i) { p.hidden = i !== n - 1; });
@@ -148,7 +150,7 @@
   function buildFlow() {
     if (!flow) return;
     buildDays();
-    $('.js-gn', flow).textContent = R.guests;
+    $('.js-gn', flow).textContent = nf(R.guests);
     $('.js-stepl', flow).textContent = T('step'); $('.js-stepof', flow).textContent = T('of');
     $('.js-send', flow).textContent = T(MODE === 'wa' ? 'send_wa' : MODE === 'mail' ? 'send_mail' : 'send_call');
     if (!panes[1].hidden) buildTimes();
@@ -158,8 +160,8 @@
   if (flow) {
     FROM = +flow.getAttribute('data-from'); TO = +flow.getAttribute('data-to'); MODE = flow.getAttribute('data-mode');
     panes = $$('.rpane', flow);
-    $('.js-minus', flow).addEventListener('click', function () { R.guests = Math.max(1, R.guests - 1); $('.js-gn', flow).textContent = R.guests; });
-    $('.js-plus', flow).addEventListener('click', function () { R.guests = Math.min(12, R.guests + 1); $('.js-gn', flow).textContent = R.guests; });
+    $('.js-minus', flow).addEventListener('click', function () { R.guests = Math.max(1, R.guests - 1); $('.js-gn', flow).textContent = nf(R.guests); });
+    $('.js-plus', flow).addEventListener('click', function () { R.guests = Math.min(12, R.guests + 1); $('.js-gn', flow).textContent = nf(R.guests); });
     $('.js-to2', flow).addEventListener('click', function () { go(2); });
     $('.js-to3', flow).addEventListener('click', function () { if (R.time != null) go(3); });
     $$('.back', flow).forEach(function (b) { b.addEventListener('click', function () { go(+b.closest('.rpane').getAttribute('data-step') - 1); }); });
