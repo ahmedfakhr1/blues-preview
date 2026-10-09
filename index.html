@@ -91,9 +91,15 @@
    <div class="fld"><label for="rf-notes" data-ar="مناسبة أو ملاحظات (اختياري)">Occasion or notes (optional)</label><textarea id="rf-notes" name="notes" rows="2"></textarea></div>
    <p class="rerr" id="rf-err" role="alert" hidden></p>
    <div class="rnav"><button class="btn ghost back" type="button" data-ar="رجوع">Back</button><button class="btn js-send" type="submit">Send request</button></div>
-   <p class="fine" data-ar="في هذه النسخة التجريبية يفتح الإرسال المكالمة بالمطعم والطلب جاهز. في الموقع الحقيقي يصل الطلب مباشرة إلى قائمة الحجوزات.">In this preview, sending opens your phone to call the restaurant with your request ready. On the real site it goes straight to the reservations list.</p>
+   <p class="fine" data-ar="في هذه النسخة التجريبية يبقى الطلب في هذه الصفحة وتتصل بالمطعم للتأكيد. في الموقع الحقيقي يصل الطلب مباشرة إلى قائمة الحجوزات.">In this preview, the request stays on this page and you call the restaurant to confirm. On the real site it goes straight to the reservations list.</p>
    <a class="js-mail" href="tel:+201044100779" hidden tabindex="-1" aria-hidden="true">call</a>
   </div>
+    <div class="rdone js-done" hidden>
+   <p class="rsum js-donesum" aria-live="polite"></p>
+   <p class="js-donehint"></p>
+   <div class="rnav"><a class="btn" href="tel:+201044100779"><span data-ar="اتصل">Call</span> <bdi>010 44100779</bdi></a><button class="btn ghost js-edit" type="button" data-ar="تعديل الطلب">Change request</button></div>
+  </div>
+
   <noscript><p class="fine">Please call 010 44100779 to book.</p></noscript>
  </form>
 </div></section>

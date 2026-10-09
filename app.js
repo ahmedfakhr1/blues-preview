@@ -1,7 +1,7 @@
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var UI = {"en": {"tonight": "Tonight", "today": "Today", "guest": "guest", "guests": "guests", "send_wa": "Send request on WhatsApp", "send_mail": "Send request by email", "send_call": "Call to confirm", "full": "Table request", "name": "Name", "phone": "Phone", "date": "Date", "time": "Time", "guestsl": "Guests", "occ": "Occasion", "notes": "Notes", "miss": "Please add your name and a phone number.", "wa_toast": "Opening WhatsApp with the request.", "mail_toast": "Opening your email app with the request.", "call_toast": "Opening your phone to call with the request.", "none": "No dishes match your search.", "step": "Step", "of": "of", "nofree": "No free times left today, pick another day."}, "ar": {"tonight": "الليلة", "today": "اليوم", "guest": "ضيف", "guests": "ضيوف", "send_wa": "أرسل الطلب عبر واتساب", "send_mail": "أرسل الطلب بالبريد", "send_call": "اتصل للتأكيد", "full": "طلب حجز طاولة", "name": "الاسم", "phone": "الهاتف", "date": "اليوم", "time": "الوقت", "guestsl": "عدد الضيوف", "occ": "المناسبة", "notes": "ملاحظات", "miss": "من فضلك اكتب اسمك ورقم هاتفك.", "wa_toast": "جارٍ فتح واتساب والطلب جاهز.", "mail_toast": "جارٍ فتح تطبيق البريد والطلب جاهز.", "call_toast": "جارٍ فتح الهاتف للاتصال والطلب جاهز.", "none": "لا توجد أطباق مطابقة لبحثك.", "step": "الخطوة", "of": "من", "nofree": "لا توجد مواعيد متاحة اليوم، اختر يوماً آخر."}};
+  var UI = {"en": {"tonight": "Tonight", "today": "Today", "guest": "guest", "guests": "guests", "send_wa": "Send request on WhatsApp", "send_mail": "Send request by email", "send_call": "Review request", "full": "Table request", "name": "Name", "phone": "Phone", "date": "Date", "time": "Time", "guestsl": "Guests", "occ": "Occasion", "notes": "Notes", "miss": "Please add your name and a phone number.", "wa_toast": "Opening WhatsApp with the request.", "mail_toast": "Opening your email app with the request.", "call_toast": "Request noted. Call to confirm your table.", "call_hint": "Call the restaurant to confirm your table.", "none": "No dishes match your search.", "step": "Step", "of": "of", "nofree": "No free times left today, pick another day."}, "ar": {"tonight": "الليلة", "today": "اليوم", "guest": "ضيف", "guests": "ضيوف", "send_wa": "أرسل الطلب عبر واتساب", "send_mail": "أرسل الطلب بالبريد", "send_call": "راجع الطلب", "full": "طلب حجز طاولة", "name": "الاسم", "phone": "الهاتف", "date": "اليوم", "time": "الوقت", "guestsl": "عدد الضيوف", "occ": "المناسبة", "notes": "ملاحظات", "miss": "من فضلك اكتب اسمك ورقم هاتفك.", "wa_toast": "جارٍ فتح واتساب والطلب جاهز.", "mail_toast": "جارٍ فتح تطبيق البريد والطلب جاهز.", "call_toast": "تم تجهيز الطلب. اتصل لتأكيد الحجز.", "call_hint": "اتصل بالمطعم لتأكيد حجز طاولتك.", "none": "لا توجد أطباق مطابقة لبحثك.", "step": "الخطوة", "of": "من", "nofree": "لا توجد مواعيد متاحة اليوم، اختر يوماً آخر."}};
   var root = document.documentElement, bd = document.body;
   var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function lang() { return root.lang === 'ar' ? 'ar' : 'en'; }
@@ -139,6 +139,12 @@
     if (n === 3) $('.js-sum', flow).textContent = summary();
     var f = $('button, input', panes[n - 1]); if (f && n > 1) f.focus({ preventScroll: true });
   }
+  var callName = '';
+  function fillDone() {
+    var dn = $('.js-done', flow); if (!dn || dn.hidden) return;
+    $('.js-donesum', flow).textContent = summary() + (callName ? ' · ' + callName : '');
+    $('.js-donehint', flow).textContent = T('call_hint');
+  }
   function buildFlow() {
     if (!flow) return;
     buildDays();
@@ -147,6 +153,7 @@
     $('.js-send', flow).textContent = T(MODE === 'wa' ? 'send_wa' : MODE === 'mail' ? 'send_mail' : 'send_call');
     if (!panes[1].hidden) buildTimes();
     if (!panes[2].hidden) $('.js-sum', flow).textContent = summary();
+    fillDone();
   }
   if (flow) {
     FROM = +flow.getAttribute('data-from'); TO = +flow.getAttribute('data-to'); MODE = flow.getAttribute('data-mode');
@@ -157,6 +164,8 @@
     $('.js-to3', flow).addEventListener('click', function () { if (R.time != null) go(3); });
     $$('.back', flow).forEach(function (b) { b.addEventListener('click', function () { go(+b.closest('.rpane').getAttribute('data-step') - 1); }); });
     $$('.ochip', flow).forEach(function (b) { b.addEventListener('click', function () { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); }); });
+    var edit = $('.js-edit', flow);
+    if (edit) edit.addEventListener('click', function () { $('.js-done', flow).hidden = true; $('.rstep', flow).hidden = false; go(1); });
     var err = $('#rf-err', flow);
     flow.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -173,7 +182,12 @@
       var a = $('.js-mail', flow), wa = bd.getAttribute('data-wa');
       if (MODE === 'wa') { a.href = 'https://wa.me/' + wa + '?text=' + encodeURIComponent(subject + '\n' + body); a.target = '_blank'; a.rel = 'noopener'; say(T('wa_toast')); }
       else if (MODE === 'mail') { a.href = 'mailto:' + a.getAttribute('href').replace('mailto:', '').split('?')[0] + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); say(T('mail_toast')); }
-      else say(T('call_toast'));
+      else {
+        var dn = $('.js-done', flow); callName = v('rf-name');
+        panes.forEach(function (p) { p.hidden = true; }); $('.rstep', flow).hidden = true; dn.hidden = false; fillDone();
+        say(T('call_toast')); var cl = $('a', dn); if (cl) cl.focus({ preventScroll: true });
+        return;
+      }
       a.click();
     });
   }
